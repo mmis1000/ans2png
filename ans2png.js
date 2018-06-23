@@ -6,7 +6,8 @@ const path = require("path");
 
 if (process.argv.length < 3) {
     console.error(`
-ans2png
+Ansi Art to PNG converter
+
 Generate png from ans file
   usage: ans2png <ans file location> [output file name]`)
     process.exit(1);
