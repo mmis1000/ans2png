@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ans viewer</title>
+    <script type="text/javascript" src="../dist/ans2png.js"></script>
+    <style type="text/css">
+        html, body {
+            height: 100%;
+            background: black;
+        }
+        
+        body {
+            margin: 0;
+        }
+        
+        .flex-container {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            display: -webkit-box;
+            display: -moz-box;
+            display: -ms-flexbox;
+            display: -webkit-flex;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        #main {
+            display: block;
+            height: 90%;
+        }
+        
+        #drop-zone {
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            top: 0px;
+            bottom: 0px;
+            color: white;
+            
+            display: -webkit-box;
+            display: -moz-box;
+            display: -ms-flexbox;
+            display: -webkit-flex;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        #drop-zone.show-hint::before {
+            content: "Drop ans file here!";
+        }
+        
+        .control {
+            position: fixed;
+            right: 0px;
+            bottom: 0px;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex-container">
+        <canvas id="main"></canvas>
+        <div id="drop-zone" class="show-hint"></div>
+    </div>
+    
+    <div class="control">
+        <a id="download" download="triangle.png">
+            <button id="save-as-png" class="hidden">另存為 PNG 檔</button>
+        </a>
+        <input type="file" id="file">
+    </div>
+    
+    <script type="text/javascript">
+        function renderFile(file) {
+            var fr = new FileReader()
+            fr.readAsArrayBuffer(file)
+            fr.onload = function () {
+                var uint8 = new Uint8Array(fr.result);
+                var canvas = document.getElementById('main')
+                
+                renderBufferLike(uint8) 
+                canvas.filename = file.name;
+            }
+        }
+    
+        function renderBufferLike(bufferLike) {
+            var canvas = document.getElementById('main')
+            
+            const ctx = Ans2png.parse(bufferLike);
+            const lines = Ans2png.style(ctx, true);
+        
+            Ans2png.render(canvas, lines, 32);
+            
+            
+            document.getElementById('drop-zone').className = ""
+            document.getElementById('save-as-png').className = ""
+        }
+    
+        /* global Ans2png */
+        document.getElementById('file').addEventListener('change', function () {
+            var selectedFile = document.getElementById('file').files[0];
+            
+            renderFile(selectedFile)
+        });
+        
+        document.getElementById('drop-zone').addEventListener("dragover", function(event) {
+            event.preventDefault();
+        });
+        
+        document.getElementById('drop-zone').addEventListener('drop', function (ev) {
+            
+            console.log('File(s) dropped');
+            
+            // Prevent default behavior (Prevent file from being opened)
+            ev.preventDefault();
+            
+            if (ev.dataTransfer.items) {
+                // Use DataTransferItemList interface to access the file(s)
+                for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+                    // If dropped items aren't files, reject them
+                    if (ev.dataTransfer.items[i].kind === 'file') {
+                        var file = ev.dataTransfer.items[i].getAsFile();
+                        renderFile(file)
+                    }
+                }
+            } else {
+                // Use DataTransfer interface to access the file(s)
+                for (var i = 0; i < ev.dataTransfer.files.length; i++) {
+                    console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
+                    var file = ev.dataTransfer.files[i]
+                    renderFile(file)
+                }
+            } 
+        });
+        
+        document.getElementById('save-as-png').addEventListener('click', function (ev) {
+            var canvas = document.getElementById('main');
+            var download = document.getElementById("download");
+            var image = canvas.toDataURL("image/png")
+                .replace("image/png", "image/octet-stream");
+            
+            download.setAttribute("download", canvas.filename.replace(/\.[^.]+$|$/, '.png'))
+            download.setAttribute("href", image);
+            //download.setAttribute("download","archive.png");
+        })
+        
+        function preloadFile() {
+            let url = 'ims.ans';
+            
+            if (!url) {
+                return;
+            }
+            
+            fetch(url)
+            .then(function(resp) {
+                return resp.blob();
+            })
+            .then(function(blob) {
+                blob.name = blob.name || url.replace(/^.+[\/\\]/, ''); 
+                renderFile(blob)
+            })
+        }
+        
+        preloadFile();
+    </script>
+    <!-- createed by mmis1000<mmis10002@gmail.com>, release under MIT license, 2018 -->
+</body>
+</html>
