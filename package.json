@@ -1,13 +1,13 @@
 {
   "name": "ans2png",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "main": "ans2png.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "ans2png": "./ans2png.js"
+    "ans2png": "./bin/ans2png.js"
   },
   "author": "mmis1000<mmis10002@gmail.com>",
   "license": "MIT",
